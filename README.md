@@ -5,100 +5,114 @@
 [![Python](https://img.shields.io/badge/Python-3.11-blue)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-3.0-green)](https://flask.palletsprojects.com)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3-orange)](https://scikit-learn.org)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render-brightgreen)](https://student-performance-ml-1ch1.onrender.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
-Supervised ML project predicting secondary school students' final grades (G3/20) using the [UCI Student Performance Dataset](https://archive.ics.uci.edu/dataset/320/student+performance) (Cortez & Silva, 2008 — 395 students, 33 features).
+Supervised ML project that predicts secondary school students' final grades (G3/20) using the [UCI Student Performance Dataset](https://archive.ics.uci.edu/dataset/320/student+performance) — 395 students, 33 features, published by Cortez & Silva (2008).
 
 ---
 
 ## Live Demo
 
-```
-python app/api.py
-→ Open http://localhost:5000
-```
+**Dashboard →** https://student-performance-ml-1ch1.onrender.com  
+**API →** https://student-performance-ml-1ch1.onrender.com/api
+
+> Hosted on Render free tier — first load may take 30–60 seconds to spin up.
 
 ---
 
-## Results
+## Model Results
 
-| Model | Exp A R² | Exp A CV R² | Exp B R² | Exp B CV R² |
+Three supervised regression models trained and evaluated with 5-fold cross-validation across two experimental setups.
+
+| Model | Exp A — R² | Exp A — CV R² | Exp B — R² | Exp B — CV R² |
 |---|---|---|---|---|
 | Linear Regression | 0.852 | 0.812 | 0.234 | 0.103 |
-| Decision Tree | 0.725 | 0.733 | — | — |
+| Decision Tree | 0.725 | 0.733 | 0.141 | -0.164 |
 | **Random Forest** | **0.874** | **0.813** | **0.341** | **0.185** |
 
-**Experiment A** — With prior grades G1, G2 (clean dataset, n=359)  
-**Experiment B** — Demographics only, no exam scores (full dataset, n=395)
+**Experiment A** — Uses prior grades G1 and G2 to predict G3. Dataset: 359 students (G3 > 0).  
+**Experiment B** — Uses demographics and behaviour only, no exam scores. Dataset: 395 students (full).
+
+Random Forest achieves **87% R²** in Experiment A after feature engineering and hyperparameter tuning (`n_estimators=300`, `max_depth=10`, `min_samples_leaf=2`).
 
 ---
 
-## What Makes This Unique
+## Feature Engineering
 
-### 1. Two experiments, not one number
-Most ML projects report one accuracy metric. This project compares two setups:
-- **Exp A** (87% R²): School has mid-year exam data → identify at-risk students
-- **Exp B** (34% R²): Enrollment-time → predict from demographics alone
+Four composite features were derived from the base UCI columns, each with a specific educational hypothesis:
 
-The gap between them tells the real story: prior performance is the dominant signal.
-
-### 2. Feature engineering with educational rationale
-
-| Feature | Formula | Why |
+| Feature | Formula | Rationale |
 |---|---|---|
-| `parent_edu` | `Medu + Fedu` | Combined parental education |
-| `study_fail` | `studytime / (failures + 1)` | Effectiveness, not just effort |
-| `grade_trend` | `G2 - G1` | Academic momentum |
-| `avg_grade` | `(G1 + G2) / 2` | Baseline performance |
+| `parent_edu` | `Medu + Fedu` | Combined parental education as a single support score |
+| `study_fail` | `studytime / (failures + 1)` | Study effectiveness adjusted for failure history |
+| `grade_trend` | `G2 - G1` | Academic momentum — whether the student is improving or declining |
+| `avg_grade` | `(G1 + G2) / 2` | Stable baseline academic performance |
 
-### 3. Cross-validation on every model
-5-fold CV across the full dataset — not just one 80/20 split. Confirms generalisation.
+---
 
-### 4. Dropout students handled correctly
-G3=0 students are real dropouts. Excluded from Exp A for clean regression; included in Exp B for realistic enrollment-time modelling. Most projects silently drop these rows.
+## Why Two Experiments
 
-### 5. Fully dynamic dashboard
-Every chart and KPI fetches live from the Flask API at page load. Retrain → refresh → everything updates automatically.
+Most student performance projects train one model and report one number. This project deliberately compares two realistic deployment scenarios:
+
+- **Experiment A (87% R²)** — The school already has mid-year exam data. Goal: identify at-risk students before finals using G1, G2, and demographics.
+- **Experiment B (34% R²)** — No exam scores available yet. Goal: predict outcomes at enrollment time using only student background and behaviour.
+
+The gap between 87% and 34% is the honest answer to how much prior grades drive the prediction. Without them, behavioural factors — `study_fail`, `failures`, and `absences` — become the top predictors.
 
 ---
 
 ## Project Structure
-
 ```
-spp/
+student-performance-ml/
 ├── data/
-│   ├── student-mat.csv          # Full UCI dataset (395 rows)
-│   └── student-mat-clean.csv    # G3>0 only (359 rows)
+│   ├── student-mat.csv            # Full dataset — 395 students, 33 features
+│   └── student-mat-clean.csv      # Filtered — 359 students with G3 > 0
 ├── src/
-│   ├── preprocess.py            # Load, encode, feature engineering
-│   └── train_model.py           # Train all 3 models, save artefacts
+│   ├── preprocess.py              # Data loading, encoding, feature engineering
+│   └── train_model.py             # Trains all 3 models, saves artefacts to models/
 ├── app/
-│   └── api.py                   # Flask REST API (9 endpoints)
-├── models/                      # Saved artefacts (auto-generated)
+│   └── api.py                     # Flask REST API — 9 endpoints
+├── models/                        # Auto-generated by train_model.py
+│   ├── model_with.pkl             # Random Forest — Experiment A
+│   ├── model_without.pkl          # Random Forest — Experiment B
+│   ├── feats_with.pkl             # Feature list — Experiment A
+│   ├── feats_without.pkl          # Feature list — Experiment B
+│   ├── all_results.json           # Full metrics for both experiments
+│   ├── scatter_data.json          # Actual vs predicted (test set)
+│   ├── corr_matrix.json           # Correlation matrix for EDA
+│   ├── grade_dist.json            # Grade distribution
+│   └── dataset_stats.json         # Summary statistics
 ├── notebooks/
-│   └── EDA.ipynb                # Full exploratory data analysis
-├── dashboard.html               # Dynamic portfolio dashboard
+│   └── EDA.ipynb                  # Exploratory data analysis
+├── static/
+│   └── favicon.svg                # Dashboard browser icon
+├── dashboard.html                 # Fully dynamic portfolio dashboard
 ├── requirements.txt
-├── Procfile                     # Deployment (Railway / Render)
+├── Procfile                       # Deployment config for Render
 └── README.md
 ```
 
 ---
 
 ## Quick Start
-
 ```bash
-git clone https://github.com/<your-username>/student-performance-ml
+git clone https://github.com/Jhil-Patel/student-performance-ml.git
 cd student-performance-ml
 
 pip install -r requirements.txt
 
-python src/train_model.py    # train models → saves to models/
-python app/api.py            # start Flask on localhost:5000
-# → open http://localhost:5000
+# Step 1 — train models (required before running the server)
+python src/train_model.py
+
+# Step 2 — start the Flask server
+python app/api.py
+
+# Step 3 — open in your browser
+# http://localhost:5000
 ```
 
-To run the EDA notebook:
+To open the EDA notebook:
 ```bash
 jupyter notebook notebooks/EDA.ipynb
 ```
@@ -107,42 +121,47 @@ jupyter notebook notebooks/EDA.ipynb
 
 ## API Endpoints
 
+All endpoints are live at https://student-performance-ml-1ch1.onrender.com
+
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/` | Interactive dashboard |
-| `GET` | `/api` | API info & usage |
-| `GET` | `/health` | Health check |
-| `GET` | `/metrics` | All model metrics |
-| `GET` | `/features/<mode>` | Feature list |
-| `GET` | `/dataset/stats` | Dataset summary |
-| `GET` | `/dataset/corr` | Correlation matrix |
-| `GET` | `/dataset/grades` | Grade distribution |
-| `GET` | `/dataset/scatter` | Actual vs predicted |
-| `POST` | `/predict` | Predict G3 grade |
+| GET | `/` | Serves the interactive dashboard |
+| GET | `/api` | API info and usage guide |
+| GET | `/health` | Health check and model status |
+| GET | `/metrics` | Full model metrics — both experiments |
+| GET | `/features/<mode>` | Feature list (`with_grades` or `without_grades`) |
+| GET | `/dataset/stats` | Dataset summary statistics |
+| GET | `/dataset/corr` | Correlation matrix — 16 numeric features |
+| GET | `/dataset/grades` | Grade distribution across 395 students |
+| GET | `/dataset/scatter` | Actual vs predicted values from test set |
+| POST | `/predict` | Predict a student's G3 final grade |
 
-### Predict Example
-
+### Example — Predict with prior grades
 ```bash
-curl -X POST http://localhost:5000/predict \
+curl -X POST https://student-performance-ml-1ch1.onrender.com/predict \
   -H "Content-Type: application/json" \
   -d '{
     "mode": "with_grades",
     "features": {
-      "G1": 12, "G2": 13, "studytime": 2, "failures": 0,
-      "absences": 4, "Medu": 3, "Fedu": 2, "higher": 1,
+      "G1": 12, "G2": 13,
+      "studytime": 2, "failures": 0, "absences": 4,
+      "Medu": 3, "Fedu": 2, "higher": 1,
       "parent_edu": 5, "study_fail": 2.0,
       "grade_trend": 1, "avg_grade": 12.5
     }
   }'
 ```
 
-**Response:**
+Response:
 ```json
 {
+  "mode": "with_grades",
   "predicted_grade": 12.8,
+  "out_of": 20,
+  "percentage": 64.0,
   "letter_grade": "C",
   "description": "Pass",
-  "percentage": 64.0,
+  "features_used": 36,
   "model": "Random Forest (n_estimators=300, max_depth=10)"
 }
 ```
@@ -151,21 +170,20 @@ curl -X POST http://localhost:5000/predict \
 
 ## Deployment
 
-### Railway (recommended — free)
-1. Push to GitHub
-2. New project → Deploy from GitHub repo
-3. Set `PORT` env variable → Railway auto-detects `Procfile`
+Deployed on **Render** using gunicorn.
 
-### Render
-1. New Web Service → connect GitHub repo
-2. Build command: `pip install -r requirements.txt && python src/train_model.py`
-3. Start command: `gunicorn --chdir app api:app`
+- **Build command:** `pip install -r requirements.txt && python src/train_model.py`
+- **Start command:** `gunicorn app.api:app --bind 0.0.0.0:$PORT`
+
+To redeploy after any push: Render auto-deploys on every push to `main`, or trigger manually from the Render dashboard.
 
 ---
 
-## Reference
+## Dataset
 
-> P. Cortez and A. Silva (2008).
-> *Using Data Mining to Predict Secondary School Student Performance.*
-> Proc. 5th Annual Future Business Technology Conf., Porto, pp. 5–12.
-> UCI ML Repository: https://archive.ics.uci.edu/dataset/320/student+performance
+**UCI Student Performance Dataset**  
+Source: https://archive.ics.uci.edu/dataset/320/student+performance  
+395 students · 33 original features · Target: G3 (final grade, 0–20)  
+9.1% dropout rate (G3 = 0) handled explicitly across both experiments.
+
+> Cortez, P. and Silva, A. (2008). *Using Data Mining to Predict Secondary School Student Performance.* Proceedings of 5th Future Business Technology Conference, Porto, pp. 5–12.
