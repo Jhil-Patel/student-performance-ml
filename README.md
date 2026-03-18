@@ -14,8 +14,7 @@ Supervised ML project that predicts secondary school students' final grades (G3/
 
 ## Live Demo
 
-**Dashboard →** https://student-performance-ml-1ch1.onrender.com  
-**API →** https://student-performance-ml-1ch1.onrender.com/api
+**Dashboard →** https://student-performance-ml-1ch1.onrender.com
 
 > Hosted on Render free tier — first load may take 30–60 seconds to spin up.
 
