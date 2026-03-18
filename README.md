@@ -135,36 +135,6 @@ All endpoints are live at https://student-performance-ml-1ch1.onrender.com
 | GET | `/dataset/scatter` | Actual vs predicted values from test set |
 | POST | `/predict` | Predict a student's G3 final grade |
 
-### Example — Predict with prior grades
-```bash
-curl -X POST https://student-performance-ml-1ch1.onrender.com/predict \
-  -H "Content-Type: application/json" \
-  -d '{
-    "mode": "with_grades",
-    "features": {
-      "G1": 12, "G2": 13,
-      "studytime": 2, "failures": 0, "absences": 4,
-      "Medu": 3, "Fedu": 2, "higher": 1,
-      "parent_edu": 5, "study_fail": 2.0,
-      "grade_trend": 1, "avg_grade": 12.5
-    }
-  }'
-```
-
-Response:
-```json
-{
-  "mode": "with_grades",
-  "predicted_grade": 12.8,
-  "out_of": 20,
-  "percentage": 64.0,
-  "letter_grade": "C",
-  "description": "Pass",
-  "features_used": 36,
-  "model": "Random Forest (n_estimators=300, max_depth=10)"
-}
-```
-
 ---
 
 ## Deployment
