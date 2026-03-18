@@ -1,0 +1,150 @@
+{
+  "with_grades": {
+    "results": {
+      "Linear Regression": {
+        "r2": 0.8524,
+        "cv_r2": 0.8116,
+        "rmse": 1.4408,
+        "mae": 1.1525
+      },
+      "Decision Tree": {
+        "r2": 0.7248,
+        "cv_r2": 0.7326,
+        "rmse": 1.9675,
+        "mae": 1.5187
+      },
+      "Random Forest": {
+        "r2": 0.8742,
+        "cv_r2": 0.8131,
+        "rmse": 1.3304,
+        "mae": 1.078
+      }
+    },
+    "importances": {
+      "G2": 0.7838411539722785,
+      "avg_grade": 0.076466215656156,
+      "freetime": 0.008713055174774656,
+      "absences": 0.008370910542951126,
+      "parent_edu": 0.008310539733889089,
+      "age": 0.0073120693127291,
+      "study_fail": 0.006602890817968785,
+      "Mjob": 0.006442545145946511,
+      "famrel": 0.006267140479051046,
+      "goout": 0.006072443399738666,
+      "health": 0.005984636692006314,
+      "grade_trend": 0.005966095778905849
+    },
+    "features": [
+      "school",
+      "sex",
+      "age",
+      "address",
+      "famsize",
+      "Pstatus",
+      "Medu",
+      "Fedu",
+      "Mjob",
+      "Fjob",
+      "reason",
+      "guardian",
+      "traveltime",
+      "studytime",
+      "failures",
+      "schoolsup",
+      "famsup",
+      "paid",
+      "activities",
+      "nursery",
+      "higher",
+      "internet",
+      "romantic",
+      "famrel",
+      "freetime",
+      "goout",
+      "Dalc",
+      "Walc",
+      "health",
+      "absences",
+      "G1",
+      "G2",
+      "parent_edu",
+      "study_fail",
+      "grade_trend",
+      "avg_grade"
+    ],
+    "n_rows": 359,
+    "n_features": 36
+  },
+  "without_grades": {
+    "results": {
+      "Linear Regression": {
+        "r2": 0.2337,
+        "cv_r2": 0.1025,
+        "rmse": 4.1405,
+        "mae": 2.9259
+      },
+      "Decision Tree": {
+        "r2": -0.09,
+        "cv_r2": -0.16,
+        "rmse": 4.9383,
+        "mae": 3.5131
+      },
+      "Random Forest": {
+        "r2": 0.3363,
+        "cv_r2": 0.185,
+        "rmse": 3.8536,
+        "mae": 2.8438
+      }
+    },
+    "importances": {
+      "failures": 0.12663149143815405,
+      "study_fail": 0.11833613039535176,
+      "health": 0.059098404700456623,
+      "freetime": 0.05576540470055583,
+      "absences": 0.05301311020530402,
+      "Mjob": 0.044971307390922755,
+      "famrel": 0.040178418014008836,
+      "Dalc": 0.039446777195607186,
+      "Walc": 0.03914958265231498,
+      "parent_edu": 0.03896814925128435,
+      "goout": 0.03566998515006587,
+      "age": 0.035386363362895565
+    },
+    "features": [
+      "school",
+      "sex",
+      "age",
+      "address",
+      "famsize",
+      "Pstatus",
+      "Medu",
+      "Fedu",
+      "Mjob",
+      "Fjob",
+      "reason",
+      "guardian",
+      "traveltime",
+      "studytime",
+      "failures",
+      "schoolsup",
+      "famsup",
+      "paid",
+      "activities",
+      "nursery",
+      "higher",
+      "internet",
+      "romantic",
+      "famrel",
+      "freetime",
+      "goout",
+      "Dalc",
+      "Walc",
+      "health",
+      "absences",
+      "parent_edu",
+      "study_fail"
+    ],
+    "n_rows": 395,
+    "n_features": 32
+  }
+}

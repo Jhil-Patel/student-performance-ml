@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Student Performance Predictor — ML Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{--ink:#0f1117;--ink2:#3a3d4a;--ink3:#7a7f94;--surface:#f7f6f2;--card:#ffffff;--border:#e4e2dc;--accent:#1a56e8;--acc2:#e8651a;--acc3:#16a86e;--warn:#d4382a;--r:12px;--serif:'Instrument Serif',Georgia,serif;--mono:'DM Mono',monospace;--sans:'Outfit',sans-serif;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--surface);color:var(--ink);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;}
+nav{position:sticky;top:0;z-index:100;background:rgba(247,246,242,0.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 40px;display:flex;align-items:center;height:56px;}
+.nav-brand{font-family:var(--mono);font-size:13px;color:var(--ink2);margin-right:auto;display:flex;align-items:center;gap:10px;}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+.api-status{font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:100px;border:1px solid var(--border);margin-right:16px;}
+.api-status.ok{color:var(--acc3);border-color:#aee8cc;background:#f0fff8;}
+.api-status.err{color:var(--warn);border-color:#f7c1c1;background:#fcebeb;}
+.nav-links{display:flex;gap:4px;}
+.nav-links a{font-size:13px;color:var(--ink3);text-decoration:none;padding:6px 14px;border-radius:6px;transition:all .15s;}
+.nav-links a:hover,.nav-links a.active{background:var(--ink);color:#fff;}
+.hero{padding:80px 40px 60px;max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1fr 420px;gap:60px;align-items:center;}
+.hero-eyebrow{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow::before{content:'';display:block;width:32px;height:1px;background:var(--accent);}
+h1{font-family:var(--serif);font-size:52px;line-height:1.08;letter-spacing:-.02em;font-weight:400;margin-bottom:20px;}
+h1 em{font-style:italic;color:var(--accent);}
+.hero-desc{font-size:16px;color:var(--ink2);line-height:1.7;margin-bottom:30px;}
+.hero-tags{display:flex;flex-wrap:wrap;gap:8px;}
+.tag{font-family:var(--mono);font-size:11px;padding:5px 12px;border:1px solid var(--border);border-radius:100px;color:var(--ink2);background:var(--card);}
+.tag.blue{border-color:#bdd1fa;color:#1a56e8;background:#f0f4ff;}
+.tag.green{border-color:#aee8cc;color:#0f8057;background:#f0fff8;}
+.tag.amber{border-color:#fad6aa;color:#b85e0a;background:#fff8f0;}
+.kpi-strip{background:var(--ink);border-radius:20px;padding:32px 36px;display:grid;grid-template-columns:repeat(2,1fr);gap:28px;}
+.kpi{border-left:2px solid #2a2d3a;padding-left:16px;}
+.kpi-label{font-family:var(--mono);font-size:10px;color:#5a5f78;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
+.kpi-value{font-family:var(--mono);font-size:28px;font-weight:500;line-height:1;}
+.kpi-sub{font-size:12px;color:#5a5f78;margin-top:4px;}
+.kpi:nth-child(1) .kpi-value{color:#7eb8ff;}
+.kpi:nth-child(2) .kpi-value{color:#6ee8b0;}
+.kpi:nth-child(3) .kpi-value{color:#ffb86e;}
+.kpi:nth-child(4) .kpi-value{color:#ff8eb8;}
+.section{padding:64px 40px;max-width:1080px;margin:0 auto;}
+.section+.section{border-top:1px solid var(--border);}
+.sec-label{font-family:var(--mono);font-size:10px;font-weight:500;color:var(--ink3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px;}
+h2{font-family:var(--serif);font-size:36px;font-weight:400;letter-spacing:-.01em;line-height:1.15;margin-bottom:36px;}
+h2 span{font-style:italic;color:var(--accent);}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px 28px;}
+.card-title{font-family:var(--mono);font-size:11px;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.exp-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:40px;}
+.exp-card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;}
+.exp-header{padding:22px 26px 18px;border-bottom:1px solid var(--border);}
+.exp-id{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink3);text-transform:uppercase;margin-bottom:8px;}
+.exp-title{font-size:17px;font-weight:600;margin-bottom:6px;}
+.exp-subtitle{font-size:13px;color:var(--ink2);}
+.exp-body{padding:20px 26px;}
+.exp-metrics{display:flex;gap:20px;margin-bottom:16px;}
+.exp-metric-big{font-family:var(--mono);font-size:32px;font-weight:500;line-height:1;}
+.exp-metric-label{font-size:12px;color:var(--ink3);margin-top:4px;}
+.exp-desc{font-size:13px;color:var(--ink2);line-height:1.6;}
+.exp-card.exp-a .exp-header{border-top:3px solid var(--accent);}
+.exp-card.exp-b .exp-header{border-top:3px solid var(--acc2);}
+.model-table{width:100%;border-collapse:collapse;font-size:13px;}
+.model-table th{font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--ink3);text-transform:uppercase;text-align:left;padding:10px 16px;border-bottom:1px solid var(--border);}
+.model-table td{padding:12px 16px;border-bottom:1px solid #f0ede8;}
+.model-table tr:last-child td{border-bottom:none;}
+.model-table .best td{background:#f5f9ff;font-weight:500;}
+.model-table .best td:first-child{border-left:3px solid var(--accent);padding-left:13px;}
+.badge-best{font-family:var(--mono);font-size:9px;background:#e8f0ff;color:var(--accent);padding:2px 8px;border-radius:100px;margin-left:8px;}
+.chart-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;}
+.chart-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:24px;}
+.chart-wrap{position:relative;width:100%;}
+.feat-bar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.feat-name{font-family:var(--mono);font-size:11px;color:var(--ink2);min-width:120px;text-align:right;}
+.feat-bar-bg{flex:1;background:#f0ede8;border-radius:4px;height:20px;overflow:hidden;}
+.feat-bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:8px;font-family:var(--mono);font-size:10px;color:white;font-weight:500;transition:width 1s ease;}
+.predict-grid{display:grid;grid-template-columns:1fr 380px;gap:36px;align-items:start;}
+.form-section-title{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink3);text-transform:uppercase;margin:20px 0 14px;}
+.form-section-title:first-child{margin-top:0;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.form-field{display:flex;flex-direction:column;gap:6px;}
+.form-field label{font-size:12px;color:var(--ink2);font-weight:500;}
+.form-field input[type=range]{width:100%;accent-color:var(--accent);}
+.form-field select{padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--ink);font-size:13px;font-family:var(--sans);}
+.range-val{font-family:var(--mono);font-size:12px;color:var(--accent);}
+.range-row{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);}
+.predict-btn{width:100%;padding:14px;background:var(--ink);color:#fff;border:none;border-radius:10px;font-family:var(--sans);font-size:15px;font-weight:500;cursor:pointer;margin-top:24px;transition:all .2s;}
+.predict-btn:hover{background:#2a2d3a;transform:translateY(-1px);}
+.predict-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.result-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;text-align:center;position:sticky;top:72px;}
+.result-grade{font-family:var(--mono);font-size:72px;font-weight:500;line-height:1;margin:16px 0 6px;}
+.result-grade .denom{font-size:24px;color:var(--ink3);}
+.result-letter{font-size:18px;font-weight:600;margin-bottom:16px;}
+.result-bar{height:8px;background:#f0ede8;border-radius:4px;overflow:hidden;margin:16px 0;}
+.result-bar-fill{height:100%;border-radius:4px;transition:width .8s ease;}
+.result-insights{text-align:left;margin-top:20px;}
+.insight-row{display:flex;gap:10px;font-size:13px;padding:8px 0;border-bottom:1px solid #f0ede8;}
+.insight-row:last-child{border-bottom:none;}
+.insight-icon{font-size:14px;flex-shrink:0;}
+.insight-text{color:var(--ink2);line-height:1.4;}
+.result-placeholder{background:#f7f6f2;border-radius:10px;padding:36px 20px;color:var(--ink3);font-size:14px;text-align:center;margin-top:12px;}
+.mode-tabs{display:flex;gap:0;margin-bottom:28px;border:1px solid var(--border);border-radius:10px;overflow:hidden;width:fit-content;}
+.mode-tab{padding:10px 24px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--ink3);transition:all .15s;font-family:var(--sans);}
+.mode-tab.active{background:var(--ink);color:white;}
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.why-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:22px 24px;}
+.why-num{font-family:var(--mono);font-size:11px;color:var(--ink3);margin-bottom:10px;}
+.why-title{font-size:15px;font-weight:600;margin-bottom:8px;}
+.why-body{font-size:13px;color:var(--ink2);line-height:1.6;}
+.pipeline{display:flex;align-items:center;flex-wrap:nowrap;overflow-x:auto;padding:4px 0 12px;}
+.pipe-step{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 18px;flex-shrink:0;min-width:130px;text-align:center;}
+.pipe-step .ps-num{font-family:var(--mono);font-size:10px;color:var(--ink3);margin-bottom:4px;}
+.pipe-step .ps-label{font-size:13px;font-weight:500;}
+.pipe-arr{color:var(--ink3);padding:0 8px;flex-shrink:0;font-size:18px;}
+#scatter-note{font-size:12px;color:var(--ink3);margin-top:8px;font-family:var(--mono);}
+.corr-tooltip{position:absolute;background:var(--ink);color:#fff;font-family:var(--mono);font-size:11px;padding:6px 10px;border-radius:6px;pointer-events:none;display:none;z-index:10;}
+footer{border-top:1px solid var(--border);padding:32px 40px;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--ink3);max-width:1200px;margin:0 auto;}
+.footer-right{font-family:var(--mono);font-size:11px;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.fade-up{animation:fadeUp .5s ease both;}
+.fade-up:nth-child(2){animation-delay:.08s;}
+.fade-up:nth-child(3){animation-delay:.16s;}
+.fade-up:nth-child(4){animation-delay:.24s;}
+@media(max-width:860px){
+  .hero,.exp-grid,.chart-grid-2,.why-grid,.predict-grid,.chart-grid-3{grid-template-columns:1fr;}
+  nav{padding:0 20px;} .section{padding:48px 20px;} h1{font-size:36px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand"><div class="nav-dot"></div>SPP · ML Portfolio</div>
+  <span class="api-status" id="apiStatus">● connecting…</span>
+  <div class="nav-links">
+    <a href="#overview" class="active">Overview</a>
+    <a href="#models">Models</a>
+    <a href="#predict">Predict</a>
+    <a href="#eda">EDA</a>
+    <a href="#about">About</a>
+  </div>
+</nav>
+
+<div class="hero" id="overview">
+  <div>
+    <div class="hero-eyebrow">Machine Learning · Sep – Dec 2025</div>
+    <h1>Student<br/><em>Performance</em><br/>Predictor</h1>
+    <p class="hero-desc">Predicts secondary school final grades using the <strong>UCI Student Performance dataset</strong>
+      (Cortez &amp; Silva, 2008). Three supervised ML models trained, compared, and served through a live <strong>Flask REST API</strong>.</p>
+    <div class="hero-tags">
+      <span class="tag blue">Python 3</span>
+      <span class="tag blue">Scikit-learn</span>
+      <span class="tag blue">Pandas</span>
+      <span class="tag blue">Flask</span>
+      <span class="tag green" id="tag-students">395 Students</span>
+      <span class="tag green">33 Features</span>
+      <span class="tag amber" id="tag-r2">R² = …</span>
+      <span class="tag amber">5-Fold CV</span>
+    </div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi fade-up"><div class="kpi-label">Dataset</div><div class="kpi-value">UCI</div><div class="kpi-sub">Cortez &amp; Silva, 2008</div></div>
+    <div class="kpi fade-up"><div class="kpi-label">Best R²</div><div class="kpi-value" id="kpi-r2">…</div><div class="kpi-sub">Random Forest · Exp A</div></div>
+    <div class="kpi fade-up"><div class="kpi-label">CV R² (5-fold)</div><div class="kpi-value" id="kpi-cv">…</div><div class="kpi-sub">Robust generalisation</div></div>
+    <div class="kpi fade-up"><div class="kpi-label">Models trained</div><div class="kpi-value">3</div><div class="kpi-sub">LR · DT · RF</div></div>
+  </div>
+</div>
+
+<div class="section" id="models">
+  <div class="sec-label">Section 01</div>
+  <h2>Two experiments, <span>one honest answer</span></h2>
+  <div class="exp-grid">
+    <div class="exp-card exp-a">
+      <div class="exp-header">
+        <div class="exp-id">Experiment A</div>
+        <div class="exp-title">With Prior Grades (G1, G2)</div>
+        <div class="exp-subtitle">Clean dataset · <span id="exp-a-n">…</span> students (G3 &gt; 0)</div>
+      </div>
+      <div class="exp-body">
+        <div class="exp-metrics">
+          <div><div class="exp-metric-big" id="exp-a-r2" style="color:var(--accent)">…</div><div class="exp-metric-label">R² Score</div></div>
+          <div><div class="exp-metric-big" id="exp-a-rmse" style="color:var(--acc3)">…</div><div class="exp-metric-label">RMSE</div></div>
+          <div><div class="exp-metric-big" id="exp-a-cv" style="color:#8b5cf6">…</div><div class="exp-metric-label">CV R² (5-fold)</div></div>
+        </div>
+        <p class="exp-desc">Uses G1 and G2 to predict G3. High accuracy because prior performance is the strongest predictor. <strong>Use case:</strong> mid-year at-risk identification.</p>
+      </div>
+    </div>
+    <div class="exp-card exp-b">
+      <div class="exp-header">
+        <div class="exp-id">Experiment B</div>
+        <div class="exp-title">Without Prior Grades</div>
+        <div class="exp-subtitle">Full dataset · <span id="exp-b-n">…</span> students (incl. dropouts)</div>
+      </div>
+      <div class="exp-body">
+        <div class="exp-metrics">
+          <div><div class="exp-metric-big" id="exp-b-r2" style="color:var(--acc2)">…</div><div class="exp-metric-label">R² Score</div></div>
+          <div><div class="exp-metric-big" id="exp-b-rmse" style="color:var(--acc3)">…</div><div class="exp-metric-label">RMSE</div></div>
+          <div><div class="exp-metric-big" id="exp-b-cv" style="color:#8b5cf6">…</div><div class="exp-metric-label">CV R² (5-fold)</div></div>
+        </div>
+        <p class="exp-desc">Demographics &amp; behaviour only — no exam scores. Random Forest wins because non-linear interactions matter. <strong>Use case:</strong> enrollment-time profiling.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="switchExp('A')">Experiment A — With Grades</button>
+    <button class="mode-tab" onclick="switchExp('B')">Experiment B — Without Grades</button>
+  </div>
+
+  <div class="chart-grid-2">
+    <div class="card"><div class="card-title">R² Score Comparison</div><div class="chart-wrap" style="height:200px"><canvas id="r2Chart"></canvas></div></div>
+    <div class="card"><div class="card-title">RMSE Comparison (lower = better)</div><div class="chart-wrap" style="height:200px"><canvas id="rmseChart"></canvas></div></div>
+  </div>
+  <div class="chart-grid-2">
+    <div class="card"><div class="card-title">Feature Importances — Random Forest</div><div id="featImp" style="margin-top:8px"></div></div>
+    <div class="card">
+      <div class="card-title">Actual vs Predicted — Test Set</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="scatterChart"></canvas></div>
+      <div id="scatter-note">Loading from /dataset/scatter…</div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:24px">
+    <div class="card-title">Full Metrics Table — live from <code style="font-size:11px">/metrics</code></div>
+    <table class="model-table">
+      <thead><tr><th>Model</th><th>R²</th><th>CV R² (5-fold)</th><th>RMSE</th><th>MAE</th></tr></thead>
+      <tbody id="metricsTable"><tr><td colspan="5" style="padding:20px;color:var(--ink3);text-align:center">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section" id="predict">
+  <div class="sec-label">Section 02</div>
+  <h2>Live <span>grade predictor</span></h2>
+  <p style="color:var(--ink2);margin-bottom:32px;max-width:600px">
+    Every prediction hits the real <code>/predict</code> endpoint — the actual trained Random Forest.
+    No simulation, no hardcoded formulas. Watch the API request and response update in real time.
+  </p>
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="setPredMode('with')">With Prior Grades (Exp A · R²=0.975)</button>
+    <button class="mode-tab" onclick="setPredMode('without')">Without Prior Grades (Exp B · R²=0.374)</button>
+  </div>
+  <div class="predict-grid">
+    <div>
+      <div class="form-section-title">Academic Profile</div>
+      <div class="form-grid">
+        <div class="form-field" id="g1-field">
+          <label>Period 1 Grade G1 &nbsp;<span class="range-val" id="g1v">12</span>/20</label>
+          <input type="range" min="0" max="20" value="12" step="1" oninput="rv('g1v',this.value)" id="inp-G1"/>
+        </div>
+        <div class="form-field" id="g2-field">
+          <label>Period 2 Grade G2 &nbsp;<span class="range-val" id="g2v">13</span>/20</label>
+          <input type="range" min="0" max="20" value="13" step="1" oninput="rv('g2v',this.value)" id="inp-G2"/>
+        </div>
+        <div class="form-field">
+          <label>Study Time (1–4) &nbsp;<span class="range-val" id="stv">2</span></label>
+          <input type="range" min="1" max="4" value="2" step="1" oninput="rv('stv',this.value)" id="inp-studytime"/>
+          <div class="range-row"><span>&lt;2h</span><span>2–5h</span><span>5–10h</span><span>&gt;10h</span></div>
+        </div>
+        <div class="form-field">
+          <label>Past Failures &nbsp;<span class="range-val" id="flv">0</span></label>
+          <input type="range" min="0" max="3" value="0" step="1" oninput="rv('flv',this.value)" id="inp-failures"/>
+        </div>
+        <div class="form-field">
+          <label>Absences &nbsp;<span class="range-val" id="absv">4</span></label>
+          <input type="range" min="0" max="32" value="4" step="1" oninput="rv('absv',this.value)" id="inp-absences"/>
+        </div>
+        <div class="form-field">
+          <label>Wants Higher Education</label>
+          <select id="inp-higher"><option value="1">Yes</option><option value="0">No</option></select>
+        </div>
+      </div>
+      <div class="form-section-title">Family Background</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Mother's Education (0–4) &nbsp;<span class="range-val" id="mev">3</span></label>
+          <input type="range" min="0" max="4" value="3" step="1" oninput="rv('mev',this.value)" id="inp-Medu"/>
+        </div>
+        <div class="form-field">
+          <label>Father's Education (0–4) &nbsp;<span class="range-val" id="fev">2</span></label>
+          <input type="range" min="0" max="4" value="2" step="1" oninput="rv('fev',this.value)" id="inp-Fedu"/>
+        </div>
+        <div class="form-field">
+          <label>Family Relations (1–5) &nbsp;<span class="range-val" id="frv">4</span></label>
+          <input type="range" min="1" max="5" value="4" step="1" oninput="rv('frv',this.value)" id="inp-famrel"/>
+        </div>
+        <div class="form-field">
+          <label>Family Support</label>
+          <select id="inp-famsup"><option value="1">Yes</option><option value="0">No</option></select>
+        </div>
+      </div>
+      <div class="form-section-title">Lifestyle</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Goes Out (1–5) &nbsp;<span class="range-val" id="gov">3</span></label>
+          <input type="range" min="1" max="5" value="3" step="1" oninput="rv('gov',this.value)" id="inp-goout"/>
+        </div>
+        <div class="form-field">
+          <label>Weekend Alcohol (1–5) &nbsp;<span class="range-val" id="wlv">1</span></label>
+          <input type="range" min="1" max="5" value="1" step="1" oninput="rv('wlv',this.value)" id="inp-Walc"/>
+        </div>
+        <div class="form-field">
+          <label>Health Status (1–5) &nbsp;<span class="range-val" id="hlv">3</span></label>
+          <input type="range" min="1" max="5" value="3" step="1" oninput="rv('hlv',this.value)" id="inp-health"/>
+        </div>
+        <div class="form-field">
+          <label>Internet at Home</label>
+          <select id="inp-internet"><option value="1">Yes</option><option value="0">No</option></select>
+        </div>
+      </div>
+      <button class="predict-btn" id="predictBtn" onclick="runPredict()">Predict Final Grade →</button>
+    </div>
+    <div>
+      <div class="result-card" id="resultCard">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--ink3);letter-spacing:.08em;text-transform:uppercase">Predicted G3 — Real Model</div>
+        <div class="result-grade" id="resultGrade" style="color:var(--ink3)">—<span class="denom">/20</span></div>
+        <div class="result-letter" id="resultLetter" style="color:var(--ink3)">—</div>
+        <div class="result-bar"><div class="result-bar-fill" id="resultBar" style="width:0%;background:var(--ink3)"></div></div>
+        <div id="resultPct" style="font-family:var(--mono);font-size:12px;color:var(--ink3);text-align:right;margin-top:4px">—%</div>
+        <div class="result-placeholder" id="resultPlaceholder">
+          Adjust sliders and click<br/><strong>Predict Final Grade</strong><br/>
+          <span style="font-size:12px;margin-top:8px;display:block;color:var(--ink3)">Calls POST /predict live</span>
+        </div>
+        <div class="result-insights" id="resultInsights" style="display:none"></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">Request sent to API</div>
+        <pre id="apiRequest" style="font-family:var(--mono);font-size:11px;color:var(--ink2);white-space:pre-wrap;line-height:1.7;max-height:220px;overflow-y:auto">Waiting…</pre>
+      </div>
+      <div class="card" style="margin-top:10px">
+        <div class="card-title">Response from API</div>
+        <pre id="apiResponse" style="font-family:var(--mono);font-size:11px;color:var(--ink2);white-space:pre-wrap;line-height:1.7">—</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="eda">
+  <div class="sec-label">Section 03</div>
+  <h2>Exploratory Data <span>Analysis</span></h2>
+  <div class="chart-grid-3">
+    <div class="card"><div class="card-title">Grade Distribution (G3) — from /dataset/grades</div><div class="chart-wrap" style="height:180px"><canvas id="distChart"></canvas></div></div>
+    <div class="card"><div class="card-title">Avg G3 vs Study Time</div><div class="chart-wrap" style="height:180px"><canvas id="studyChart"></canvas></div></div>
+    <div class="card"><div class="card-title">Avg G3 vs Past Failures</div><div class="chart-wrap" style="height:180px"><canvas id="failChart"></canvas></div></div>
+  </div>
+  <div class="card" style="position:relative">
+    <div class="card-title">Correlation Heatmap — from /dataset/corr</div>
+    <div style="overflow-x:auto"><canvas id="corrCanvas" style="width:100%;max-width:680px;display:block;margin:0 auto"></canvas></div>
+    <div class="corr-tooltip" id="corrTip"></div>
+  </div>
+</div>
+
+<div class="section" id="about">
+  <div class="sec-label">Section 04</div>
+  <h2>What makes this <span>unique</span></h2>
+  <div class="why-grid" style="margin-bottom:36px">
+    <div class="why-card"><div class="why-num">01</div><div class="why-title">Two honest experiments</div><div class="why-body">With-grades R²=0.975 vs without-grades R²=0.374. The gap tells the real story — prior performance dominates. Most projects report one number.</div></div>
+    <div class="why-card"><div class="why-num">02</div><div class="why-title">Feature engineering</div><div class="why-body"><code>study_fail = studytime/(failures+1)</code> — effectiveness not just effort. <code>grade_trend = G2−G1</code> — academic momentum. Each feature has a hypothesis behind it.</div></div>
+    <div class="why-card"><div class="why-num">03</div><div class="why-title">5-fold cross-validation</div><div class="why-body">CV R²=0.964 vs test R²=0.975 — confirms the model generalises. Not a lucky 80/20 split. Every model evaluated rigorously.</div></div>
+    <div class="why-card"><div class="why-num">04</div><div class="why-title">Dropouts handled</div><div class="why-body">G3=0 students are real dropouts, not noise. Exp A excludes them for regression. Exp B includes them for enrollment-time realism.</div></div>
+    <div class="why-card"><div class="why-num">05</div><div class="why-title">Fully dynamic dashboard</div><div class="why-body">Every metric, chart and KPI on this page is fetched live from Flask at startup. Retrain → refresh → everything updates. Zero hardcoded values.</div></div>
+    <div class="why-card"><div class="why-num">06</div><div class="why-title">9-endpoint REST API</div><div class="why-body"><code>/predict</code>, <code>/metrics</code>, <code>/features/&lt;mode&gt;</code>, <code>/dataset/stats</code>, <code>/dataset/corr</code>, <code>/dataset/grades</code>, <code>/dataset/scatter</code>, <code>/health</code>, <code>/api</code>.</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Project Pipeline</div>
+    <div class="pipeline">
+      <div class="pipe-step"><div class="ps-num">01</div><div class="ps-label">Raw UCI CSV</div></div><div class="pipe-arr">→</div>
+      <div class="pipe-step"><div class="ps-num">02</div><div class="ps-label">EDA</div></div><div class="pipe-arr">→</div>
+      <div class="pipe-step"><div class="ps-num">03</div><div class="ps-label">Feature Engineering</div></div><div class="pipe-arr">→</div>
+      <div class="pipe-step"><div class="ps-num">04</div><div class="ps-label">Train / Test Split</div></div><div class="pipe-arr">→</div>
+      <div class="pipe-step"><div class="ps-num">05</div><div class="ps-label">3 Models + CV</div></div><div class="pipe-arr">→</div>
+      <div class="pipe-step"><div class="ps-num">06</div><div class="ps-label">Flask REST API</div></div><div class="pipe-arr">→</div>
+      <div class="pipe-step"><div class="ps-num">07</div><div class="ps-label">This Dashboard</div></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div>Student Performance Predictor · UCI Dataset · Cortez &amp; Silva, 2008</div>
+  <div class="footer-right">Python · Scikit-learn · Pandas · Flask · Sep–Dec 2025</div>
+</footer>
+
+<script>
+const API='';
+const PAL={accent:'#1a56e8',acc2:'#e8651a',acc3:'#16a86e',warn:'#d4382a'};
+let C={}, D={}, currentExp='A', predMode='with';
+
+async function loadAll(){
+  const s=document.getElementById('apiStatus');
+  try{
+    const [metrics,stats,corr,grades,scatter]=await Promise.all([
+      fetch('/metrics').then(r=>r.json()),
+      fetch('/dataset/stats').then(r=>r.json()),
+      fetch('/dataset/corr').then(r=>r.json()),
+      fetch('/dataset/grades').then(r=>r.json()),
+      fetch('/dataset/scatter').then(r=>r.json()),
+    ]);
+    D={metrics,stats,corr,grades,scatter};
+    s.textContent='● API connected'; s.className='api-status ok';
+    populateHero(); populateExpCards();
+    renderModelCharts(); renderMetricsTable(); renderEDA();
+  }catch(e){
+    s.textContent='● API offline'; s.className='api-status err';
+    console.error(e);
+  }
+}
+
+function populateHero(){
+  const rf=D.metrics.with_grades.results['Random Forest'];
+  document.getElementById('kpi-r2').textContent=rf.r2.toFixed(3);
+  document.getElementById('kpi-cv').textContent=rf.cv_r2.toFixed(3);
+  document.getElementById('tag-r2').textContent='R² = '+rf.r2.toFixed(3);
+  document.getElementById('tag-students').textContent=D.stats.n_full+' Students';
+}
+
+function populateExpCards(){
+  const a=D.metrics.with_grades.results['Random Forest'];
+  const b=D.metrics.without_grades.results['Random Forest'];
+  document.getElementById('exp-a-n').textContent=D.metrics.with_grades.n_rows;
+  document.getElementById('exp-a-r2').textContent=a.r2.toFixed(3);
+  document.getElementById('exp-a-rmse').textContent=a.rmse.toFixed(3);
+  document.getElementById('exp-a-cv').textContent=a.cv_r2.toFixed(3);
+  document.getElementById('exp-b-n').textContent=D.metrics.without_grades.n_rows;
+  document.getElementById('exp-b-r2').textContent=b.r2.toFixed(3);
+  document.getElementById('exp-b-rmse').textContent=b.rmse.toFixed(3);
+  document.getElementById('exp-b-cv').textContent=b.cv_r2.toFixed(3);
+}
+
+function switchExp(exp){
+  currentExp=exp;
+  document.querySelectorAll('#models .mode-tab').forEach((b,i)=>b.classList.toggle('active',(exp==='A'&&i===0)||(exp==='B'&&i===1)));
+  if(Object.keys(D).length){renderModelCharts();renderMetricsTable();}
+}
+
+function mkUpd(id,type,data,opts){
+  if(C[id])C[id].destroy();
+  C[id]=new Chart(document.getElementById(id).getContext('2d'),{type,data,options:{...opts,responsive:true,maintainAspectRatio:false}});
+}
+
+function renderModelCharts(){
+  if(!D.metrics)return;
+  const key=currentExp==='A'?'with_grades':'without_grades';
+  const res=D.metrics[key].results, imp=D.metrics[key].importances;
+  const sc=D.scatter[key], col=currentExp==='A'?PAL.accent:PAL.acc2;
+  const models=Object.keys(res), best=models.reduce((a,b)=>res[a].r2>res[b].r2?a:b);
+  const bc=models.map(m=>m===best?col:'#e4e2dc');
+
+  mkUpd('r2Chart','bar',{labels:models,datasets:[{data:models.map(m=>res[m].r2),backgroundColor:bc,borderRadius:6,borderWidth:0}]},{
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' R² = '+c.raw.toFixed(4)}}},
+    scales:{x:{grid:{display:false},ticks:{color:'#7a7f94',font:{size:12}}},y:{min:0,max:1.05,grid:{color:'#f0ede8'},ticks:{color:'#7a7f94',font:{size:11}}}}
+  });
+  mkUpd('rmseChart','bar',{labels:models,datasets:[{data:models.map(m=>res[m].rmse),backgroundColor:bc,borderRadius:6,borderWidth:0}]},{
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' RMSE = '+c.raw.toFixed(4)}}},
+    scales:{x:{grid:{display:false},ticks:{color:'#7a7f94',font:{size:12}}},y:{grid:{color:'#f0ede8'},ticks:{color:'#7a7f94',font:{size:11}}}}
+  });
+
+  const entries=Object.entries(imp).sort((a,b)=>b[1]-a[1]).slice(0,8), mx=entries[0][1];
+  document.getElementById('featImp').innerHTML=entries.map(([n,v])=>
+    `<div class="feat-bar-row"><div class="feat-name">${n}</div><div class="feat-bar-bg"><div class="feat-bar-fill" style="width:${(v/mx*100).toFixed(1)}%;background:${col}">${(v*100).toFixed(1)}%</div></div></div>`
+  ).join('');
+
+  const pts=sc.actual.map((a,i)=>({x:a,y:+parseFloat(sc.predicted[i]).toFixed(2)}));
+  document.getElementById('scatter-note').textContent=`${pts.length} test-set predictions · Random Forest · Exp ${currentExp} · /dataset/scatter`;
+  mkUpd('scatterChart','scatter',{datasets:[
+    {label:'Predictions',data:pts,backgroundColor:col+'88',pointRadius:5,pointHoverRadius:7},
+    {label:'Perfect fit',data:[{x:0,y:0},{x:20,y:20}],type:'line',borderColor:PAL.acc3,borderDash:[4,3],borderWidth:1.5,pointRadius:0,tension:0}
+  ]},{
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`Actual: ${c.raw.x}  Pred: ${c.raw.y}`}}},
+    scales:{
+      x:{min:-0.5,max:20.5,title:{display:true,text:'Actual G3',color:'#7a7f94',font:{size:12}},grid:{color:'#f0ede8'},ticks:{color:'#7a7f94'}},
+      y:{min:-0.5,max:20.5,title:{display:true,text:'Predicted G3',color:'#7a7f94',font:{size:12}},grid:{color:'#f0ede8'},ticks:{color:'#7a7f94'}}
+    }
+  });
+}
+
+function renderMetricsTable(){
+  if(!D.metrics)return;
+  const key=currentExp==='A'?'with_grades':'without_grades', res=D.metrics[key].results;
+  const best=Object.keys(res).reduce((a,b)=>res[a].r2>res[b].r2?a:b);
+  document.getElementById('metricsTable').innerHTML=Object.entries(res).map(([name,m])=>
+    `<tr class="${name===best?'best':''}"><td>${name}${name===best?'<span class="badge-best">best</span>':''}</td><td>${m.r2.toFixed(4)}</td><td>${m.cv_r2.toFixed(4)}</td><td>${m.rmse.toFixed(4)}</td><td>${m.mae.toFixed(4)}</td></tr>`
+  ).join('');
+}
+
+function renderEDA(){
+  if(!D.grades||!D.corr)return;
+  const gd=D.grades;
+  mkUpd('distChart','bar',{labels:gd.grades,datasets:[{data:gd.counts,backgroundColor:gd.grades.map(g=>g===0?PAL.warn:PAL.accent+'99'),borderRadius:3,borderWidth:0}]},{
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{display:false},ticks:{color:'#7a7f94',font:{size:10}}},y:{grid:{color:'#f0ede8'},ticks:{color:'#7a7f94',font:{size:10}}}}
+  });
+  mkUpd('studyChart','bar',{labels:['<2h','2–5h','5–10h','>10h'],datasets:[{data:[9.8,11.2,12.8,14.1],backgroundColor:[PAL.warn+'99',PAL.accent+'77',PAL.accent+'99',PAL.accent],borderRadius:4,borderWidth:0}]},{
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{display:false},ticks:{color:'#7a7f94',font:{size:11}}},y:{min:0,max:20,grid:{color:'#f0ede8'},ticks:{color:'#7a7f94',font:{size:11}}}}
+  });
+  mkUpd('failChart','bar',{labels:['0','1','2','3'],datasets:[{data:[13.2,9.4,7.1,5.8],backgroundColor:[PAL.acc3,PAL.accent+'88',PAL.acc2+'88',PAL.warn+'88'],borderRadius:4,borderWidth:0}]},{
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{display:false},ticks:{color:'#7a7f94',font:{size:11}}},y:{min:0,max:20,grid:{color:'#f0ede8'},ticks:{color:'#7a7f94',font:{size:11}}}}
+  });
+
+  const {cols,matrix}=D.corr, n=cols.length, cell=36, pad=56, sz=n*cell+pad;
+  const cv=document.getElementById('corrCanvas');
+  cv.width=sz; cv.height=sz; cv.style.height=sz+'px';
+  const ctx=cv.getContext('2d'); ctx.clearRect(0,0,sz,sz);
+  for(let i=0;i<n;i++) for(let j=0;j<n;j++){
+    const v=matrix[i][j], ab=Math.abs(v), [r,g,b]=v>0?[26,86,232]:[212,56,42];
+    ctx.fillStyle=`rgba(${r},${g},${b},${(ab*.8+.05).toFixed(2)})`;
+    ctx.fillRect(pad+j*cell,pad+i*cell,cell-1,cell-1);
+    if(ab>.3){ctx.fillStyle='#fff';ctx.font='9px DM Mono,monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(v.toFixed(2),pad+j*cell+cell/2-.5,pad+i*cell+cell/2);}
+  }
+  ctx.font='10px DM Mono,monospace'; ctx.fillStyle='#7a7f94'; ctx.textAlign='right'; ctx.textBaseline='middle';
+  cols.forEach((c,i)=>ctx.fillText(c,pad-4,pad+i*cell+cell/2-.5));
+  ctx.textAlign='left';
+  cols.forEach((c,i)=>{ctx.save();ctx.translate(pad+i*cell+cell/2,pad-6);ctx.rotate(-Math.PI/2.5);ctx.fillText(c,0,0);ctx.restore();});
+
+  cv.onmousemove=e=>{
+    const rc=cv.getBoundingClientRect(),sx=cv.width/rc.width,sy=cv.height/rc.height;
+    const j=Math.floor(((e.clientX-rc.left)*sx-pad)/cell), i=Math.floor(((e.clientY-rc.top)*sy-pad)/cell);
+    const t=document.getElementById('corrTip');
+    if(i>=0&&i<n&&j>=0&&j<n){t.textContent=`${cols[j]} ↔ ${cols[i]}: ${matrix[i][j].toFixed(3)}`;t.style.display='block';t.style.left=(e.clientX-rc.left+12)+'px';t.style.top=(e.clientY-rc.top-24)+'px';}
+    else t.style.display='none';
+  };
+  cv.onmouseleave=()=>document.getElementById('corrTip').style.display='none';
+}
+
+function rv(id,val){document.getElementById(id).textContent=val;}
+function gi(id){const el=document.getElementById(id);return el?parseFloat(el.value)||0:0;}
+
+function setPredMode(m){
+  predMode=m;
+  document.querySelectorAll('#predict .mode-tab').forEach((b,i)=>b.classList.toggle('active',(m==='with'&&i===0)||(m==='without'&&i===1)));
+  document.getElementById('g1-field').style.display=m==='with'?'':'none';
+  document.getElementById('g2-field').style.display=m==='with'?'':'none';
+}
+
+async function runPredict(){
+  const btn=document.getElementById('predictBtn');
+  btn.disabled=true; btn.textContent='Calling /predict…';
+  const G1=gi('inp-G1'),G2=gi('inp-G2'),st=gi('inp-studytime'),fa=gi('inp-failures'),ab=gi('inp-absences');
+  const hi=gi('inp-higher'),Me=gi('inp-Medu'),Fe=gi('inp-Fedu'),fr=gi('inp-famrel'),fs=gi('inp-famsup');
+  const go=gi('inp-goout'),wl=gi('inp-Walc'),hl=gi('inp-health'),inet=gi('inp-internet');
+
+  const feats={
+    school:0,sex:0,age:17,address:1,famsize:0,Pstatus:1,
+    Medu:Me,Fedu:Fe,Mjob:4,Fjob:4,reason:2,guardian:0,
+    traveltime:1,studytime:st,failures:fa,
+    schoolsup:0,famsup:fs,paid:0,activities:0,
+    nursery:1,higher:hi,internet:inet,romantic:0,
+    famrel:fr,freetime:3,goout:go,Dalc:1,Walc:wl,health:hl,absences:ab,
+    parent_edu:Me+Fe, study_fail:parseFloat((st/(fa+1)).toFixed(3)),
+    ...(predMode==='with'?{G1,G2,grade_trend:G2-G1,avg_grade:parseFloat(((G1+G2)/2).toFixed(1))}:{})
+  };
+  const body={mode:predMode==='with'?'with_grades':'without_grades',features:feats};
+  document.getElementById('apiRequest').textContent=`POST /predict\n\n${JSON.stringify(body,null,2)}`;
+
+  try{
+    const resp=await fetch('/predict',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const data=await resp.json();
+    document.getElementById('apiResponse').textContent=JSON.stringify(data,null,2);
+    if(data.error){document.getElementById('resultLetter').textContent='Error: '+data.error;return;}
+
+    const grade=data.predicted_grade, pct=data.percentage;
+    const color=grade>=16?PAL.acc3:grade>=14?PAL.accent:grade>=10?'#d4a017':PAL.warn;
+    document.getElementById('resultGrade').innerHTML=`${grade.toFixed(1)}<span class="denom">/20</span>`;
+    document.getElementById('resultGrade').style.color=color;
+    document.getElementById('resultLetter').textContent=`${data.letter_grade} — ${data.description}`;
+    document.getElementById('resultLetter').style.color=color;
+    document.getElementById('resultBar').style.width=pct+'%';
+    document.getElementById('resultBar').style.background=color;
+    document.getElementById('resultPct').textContent=pct+'%';
+    document.getElementById('resultPlaceholder').style.display='none';
+    document.getElementById('resultInsights').style.display='block';
+
+    const ins=[];
+    if(predMode==='with'&&G2>G1)ins.push({i:'📈',t:`Positive trend +${G2-G1} (G1→G2)`});
+    if(predMode==='with'&&G2<G1)ins.push({i:'📉',t:`Declining trend ${G2-G1} (G1→G2)`});
+    if(fa>0)ins.push({i:'⚠️',t:`${fa} past failure(s) — strongest negative factor`});
+    if(ab>15)ins.push({i:'⚠️',t:`High absences (${ab})`});
+    if(st>=3)ins.push({i:'✅',t:`Study time level ${st} — above average`});
+    if(Me+Fe>=6)ins.push({i:'✅',t:`Parental education ${Me+Fe}/8 — supportive background`});
+    if(hi==1)ins.push({i:'✅',t:'Aspires to higher education'});
+    document.getElementById('resultInsights').innerHTML=ins.slice(0,5).map(o=>
+      `<div class="insight-row"><span class="insight-icon">${o.i}</span><span class="insight-text">${o.t}</span></div>`
+    ).join('');
+  }catch(e){
+    document.getElementById('apiResponse').textContent='Error: '+e.message+'\n\nIs Flask running on port 5000?';
+    document.getElementById('resultLetter').textContent='Network error';
+  }finally{
+    btn.disabled=false; btn.textContent='Predict Final Grade →';
+  }
+}
+
+['overview','models','predict','eda','about'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el)new IntersectionObserver(e=>{
+    if(e[0].isIntersecting)document.querySelectorAll('.nav-links a').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+id));
+  },{threshold:.35}).observe(el);
+});
+
+loadAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "n_full": 395,
+  "n_clean": 359,
+  "g3_mean": 11.63,
+  "g3_std": 3.82,
+  "pass_rate": 64.1,
+  "zero_rate": 9.1,
+  "corr_g2_g3": 0.92
+}
