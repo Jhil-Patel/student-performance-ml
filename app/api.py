@@ -28,6 +28,12 @@ BASE_DIR   = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 
 app = Flask(__name__, static_folder=BASE_DIR, static_url_path="")
+
+# Serve /static/* files (favicon, etc.)
+@app.route("/static/<path:filename>")
+def static_files(filename):
+    import os
+    return send_from_directory(os.path.join(BASE_DIR, "static"), filename)
 app.config["JSON_SORT_KEYS"] = False
 
 
